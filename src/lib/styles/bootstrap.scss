@@ -1,0 +1,15 @@
+// ─── Custom Bootstrap Variables ─────────────────────────────────────────────
+// Ganti nilai di sini untuk mengubah warna/tampilan Bootstrap secara global.
+
+$primary:        #C0B283;
+$primary-text:   #fff;
+
+// Turunan otomatis dari $primary
+$link-color:     $primary;
+
+// Supaya badge/button teks tetap terbaca di atas warna $primary yang terang
+$btn-primary-color:      #fff;
+
+// ─── Bootstrap Source ───────────────────────────────────────────────────────
+@import 'bootstrap/scss/bootstrap';
+@import './animation.scss';
