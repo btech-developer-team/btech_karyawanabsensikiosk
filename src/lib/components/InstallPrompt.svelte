@@ -47,7 +47,7 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		background: #c0b283;
+		background: var(--bs-primary);
 		color: #fff;
 		border-radius: 999px;
 		padding: 8px 14px;

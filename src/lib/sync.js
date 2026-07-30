@@ -1,8 +1,26 @@
 import { API } from "./config.js";
-import { allAbsensi, replaceKaryawan, upsertAbsensi } from "./db.js";
+import {
+  allAbsensi,
+  emptyTodayAbsensi,
+  pruneSyncedAbsensi,
+  replaceKaryawan,
+  upsertAbsensi
+} from "./db.js";
 import { onlyNotSynced } from "./absensi.js";
 
 const SYNC_BATCH = 500;
+
+function mapServerAbsensi(row) {
+  return {
+    code: String(row.code ?? ""),
+    tgl_shift: String(row.tgl_shift ?? "").split(" ")[0],
+    nama_lengkap: row.nama_lengkap ?? row.pegawai_nama ?? null,
+    avatar: row.avatar ?? null,
+    scan_in: row.scan_in ?? null,
+    scan_out: row.scan_out ?? null,
+    status: row.status ?? null
+  };
+}
 
 export async function fetchKaryawan() {
   const response = await fetch(API.karyawan);
@@ -18,7 +36,8 @@ export async function fetchKaryawan() {
       jabatan: item.jabatan,
       shift_masuk: item.shift_masuk,
       shift_keluar: item.shift_keluar,
-      avatar: item.avatar
+      avatar: item.avatar,
+      rfid: item.rfid != null && item.rfid !== "" ? String(item.rfid) : null
     }))
   );
 }
@@ -32,9 +51,11 @@ export async function syncAbsensi() {
   const pending = (await allAbsensi())
     .filter(onlyNotSynced)
     .slice(0, SYNC_BATCH);
-  console.log(pending);
+
+  await pruneSyncedAbsensi();
+
   if (!pending.length) {
-    getSyncAbsensi();
+    await getSyncAbsensi();
     return { sent: 0 };
   }
 
@@ -43,23 +64,11 @@ export async function syncAbsensi() {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({ absensi: pending })
   });
-  console.log(response);
   if (!response.ok) throw new Error(`Sync gagal (${response.status})`);
 
   const result = await response.json();
-  if (result?.status === true && Array.isArray(result.data)) {
-    // yang dibalas server sudah tersimpan di sana; upsertAbsensi yang menandai ter-sync
-    await upsertAbsensi(
-      result.data.map((row) => ({
-        code: String(row.code ?? ""),
-        tgl_shift: String(row.tgl_shift ?? "").split(" ")[0],
-        nama_lengkap: row.nama_lengkap ?? row.pegawai_nama ?? null,
-        avatar: row.avatar ?? null,
-        scan_in: row.scan_in ?? null,
-        scan_out: row.scan_out ?? null,
-        status: row.status ?? null
-      }))
-    );
+  if (result?.status === true && Array.isArray(result.data) && result.data.length > 0) {
+    await upsertAbsensi(result.data.map(mapServerAbsensi));
   }
   return { sent: pending.length, synced: result?.synced };
 }
@@ -72,19 +81,10 @@ export async function getSyncAbsensi() {
   if (!response.ok) throw new Error(`Sync gagal (${response.status})`);
 
   const result = await response.json();
-  if (result?.status === true && Array.isArray(result.data)) {
-    // yang dibalas server sudah tersimpan di sana; upsertAbsensi yang menandai ter-sync
-    await upsertAbsensi(
-      result.data.map((row) => ({
-        code: String(row.code ?? ""),
-        tgl_shift: String(row.tgl_shift ?? "").split(" ")[0],
-        nama_lengkap: row.nama_lengkap ?? row.pegawai_nama ?? null,
-        avatar: row.avatar ?? null,
-        scan_in: row.scan_in ?? null,
-        scan_out: row.scan_out ?? null,
-        status: row.status ?? null
-      }))
-    );
+  if (result?.status === true && Array.isArray(result.data) && result.data.length > 0) {
+    await upsertAbsensi(result.data.map(mapServerAbsensi));
+  } else {
+    await emptyTodayAbsensi();
   }
   return result;
 }

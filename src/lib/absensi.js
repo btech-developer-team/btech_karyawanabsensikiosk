@@ -17,8 +17,6 @@ export function decideAbsensi({ existing, karyawan, currentTime, isoDate }) {
 	const nowSec = timeToSeconds(currentTime);
 	const masukSec = timeToSeconds(karyawan.shift_masuk);
 	const keluarSec = timeToSeconds(karyawan.shift_keluar);
-
-	console.log(nowSec, masukSec, keluarSec);
 	if (nowSec == null || masukSec == null || keluarSec == null) return { status: 'invalid-shift' };
 
 	const record = {
@@ -42,7 +40,7 @@ export function decideAbsensi({ existing, karyawan, currentTime, isoDate }) {
 		const inSec = timeToSeconds(record.scan_in);
 		if (inSec != null && nowSec - inSec < MIN_SCAN_GAP_SECONDS) throw new Error('Baru saja scan masuk. Coba lagi beberapa saat.');
 		// Scan kedua sebelum jam pulang tidak boleh menyimpan perubahan apa pun.
-		if (nowSec < keluarSec) return { status: 'before-checkout' };
+		if (nowSec < keluarSec) return { status: 'too-soon' };
 		record.scan_out = currentTime;
 		record.status = 'Keluar';
 		record.isOutSynced = false;
@@ -56,7 +54,7 @@ const MESSAGES = {
 	'invalid-shift': 'Jadwal shift karyawan belum tersedia.',
 	'outside-shift': 'Scan di luar jam shift hari ini.',
 	'before-checkout': 'Belum jam pulang. Scan keluar belum bisa diproses.',
-	'too-soon': 'Baru saja scan masuk. Coba lagi beberapa saat.',
+	'too-soon': 'Karyawan sudah scan masuk sebelumnya!!',
 	done: 'Sudah scan masuk dan keluar hari ini.'
 };
 
@@ -86,7 +84,7 @@ export async function processScan(raw) {
 			return { type: 'error', message: 'Kode karyawan tidak ditemukan.', user: { nama: identifier } };
 		}
 
-		const existing = await findAbsensi(identifier, isoDate);
+		const existing = await findAbsensi(karyawan.id, isoDate);
 		const { status, record } = decideAbsensi({ existing, karyawan, currentTime: time, isoDate });
 		if (!record) {
 			return { type: 'error', message: MESSAGES[status] ?? 'Scan tidak dapat diproses.', user: karyawan };

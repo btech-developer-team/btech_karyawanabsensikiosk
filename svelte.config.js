@@ -1,13 +1,12 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-node';
 
-// diserve dari subfolder Laravel nanti (mis. KIOSK_BASE=/kiosk-absensi saat build)
+// diserve dari subfolder nanti (mis. KIOSK_BASE=/kiosk-absensi saat build)
 const base = process.env.KIOSK_BASE ?? '';
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {
 	kit: {
-		// SPA: Web Serial + IndexedDB hanya ada di browser, jadi tidak ada SSR
-		adapter: adapter({ fallback: 'index.html' }),
+		adapter: adapter(),
 		paths: { base },
 		files: { lib: 'src/lib' }
 	}

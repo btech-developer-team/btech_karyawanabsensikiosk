@@ -94,7 +94,7 @@
 		height: 36px;
 		border-radius: 50%;
 		object-fit: cover;
-		border: 2px solid #c0b283;
+		border: 2px solid var(--bs-primary);
 		flex-shrink: 0;
 	}
 

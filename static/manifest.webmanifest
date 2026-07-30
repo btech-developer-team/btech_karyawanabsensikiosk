@@ -1,0 +1,30 @@
+{
+	"name": "B Erl Kiosk Absensi",
+	"short_name": "Kiosk Absensi",
+	"description": "Kiosk absensi B Erl. Tetap bisa dipakai tanpa koneksi internet.",
+	"lang": "id",
+	"start_url": ".",
+	"scope": ".",
+	"display": "standalone",
+	"orientation": "landscape",
+	"background_color": "#ffffff",
+	"theme_color": "#C0B283",
+	"icons": [
+		{
+			"src": "pwa-icons/icon-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "pwa-icons/icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "pwa-icons/icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}

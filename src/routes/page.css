@@ -13,7 +13,7 @@
   max-width: 80%;
   margin-bottom: 20px;
   background-color: #ffffff;
-  border: 5px solid #c0b283;
+  border: 5px solid var(--bs-primary);
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   padding: 10px;
@@ -78,10 +78,10 @@
 }
 
 .scan-input {
-  border: 2px solid #c0b283;
+  border: 2px solid var(--bs-primary);
 }
 
 .btn-kiosk {
-  background-color: #c0b283;
+  background-color: var(--bs-primary);
   color: #fff;
 }

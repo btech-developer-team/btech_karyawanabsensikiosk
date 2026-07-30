@@ -14,7 +14,7 @@
 		gap: 8px;
 		min-height: 31px;
 		padding: 4px 12px;
-		border: 1px solid #c0b283;
+		border: 1px solid var(--bs-primary);
 		border-radius: 999px;
 		background: rgba(255, 255, 255, 0.85);
 		color: #7a6a3a;

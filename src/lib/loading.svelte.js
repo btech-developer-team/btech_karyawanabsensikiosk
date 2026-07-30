@@ -11,7 +11,7 @@ class Loading {
 		this.active = true;
 	}
 
-	end() {
+	end() { 
 		this.#counter = Math.max(0, this.#counter - 1);
 		if (this.#counter === 0) this.active = false;
 	}
