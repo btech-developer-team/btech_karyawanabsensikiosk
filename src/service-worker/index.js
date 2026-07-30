@@ -10,7 +10,7 @@ const NAVIGATION_TIMEOUT = 3000;
 const ASSETS = [...build, ...files];
 
 // data pegawai & sync selalu ke server; offline-nya sudah ditangani IndexedDB di halaman
-const NETWORK_ONLY_PREFIXES = ['/api/kiosk'];
+const NETWORK_ONLY_PREFIXES = ['/api/karyawan', '/api/sync'];
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(

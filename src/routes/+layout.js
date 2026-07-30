@@ -1,3 +1,2 @@
-// SPA: seluruh fitur kiosk (Web Serial, IndexedDB) hanya jalan di browser
-export const ssr = false;
+// Layout boleh SSR; API route (+server.js) tetap jalan di server.
 export const prerender = false;

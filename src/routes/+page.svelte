@@ -148,8 +148,8 @@
     });
     refreshAll();
 
-    const onOnline = () => {alert('online');refreshAll()};
-    const onOffline = () => {alert('offline');reloadRows()};
+    const onOnline = () => refreshAll();
+    const onOffline = () => reloadRows();
     nfcScannerInstance = createNfcScanner({
       onScan: handleScan,
       minLength: 8,
