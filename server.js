@@ -33,7 +33,8 @@ function loadEnvFile(filename = '.env') {
 loadEnvFile('.env');
 loadEnvFile('.env.production');
 
-// default aman untuk shared hosting (Niagahoster tidak izinkan 0.0.0.0)
-if (!process.env.HOST) process.env.HOST = '127.0.0.1';
+// HAPUS ATAU JANGAN SET process.env.HOST SAMA SEKALI
+if (process.env.HOST) delete process.env.HOST; 
 
+// Biarkan adapter-node berjalan otomatis menggunakan port dinamis dari cPanel
 await import('./build/index.js');
