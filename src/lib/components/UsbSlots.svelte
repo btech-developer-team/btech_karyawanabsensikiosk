@@ -17,35 +17,35 @@
 	}
 </script>
 
-<div class="usb-slots">
+<div class="row g-2">
 	{#each slotIndexes as index (index)}
 		{@const slot = scanner.slots[index]}
 		{@const last = lastScans[index]}
-		<div class="card usb-slot">
-			<div class="card-body p-2">
-				<!-- Info port -->
-				<div class="slot-header text-center">
-					<h6 class="mb-0 slot-name">{slot?.name ?? `USB COM ${index + 1}`}</h6>
-					<span class="small {slot ? statusClass(slot.status) : 'text-muted'}">
-						{slot?.status ?? STATUS.empty}
-					</span>
-				</div>
-
-				<!-- Karyawan terakhir scan dari slot ini -->
-				<div class="last-scan mt-2">
-					{#if last}
-						<img
-							class="scan-avatar"
-							src={last.avatar || DEFAULT_AVATAR}
-							alt={last.nama}
-						/>
-						<div class="scan-info">
-							<span class="scan-code">{last.id}</span>
-							<span class="scan-nama">{last.nama}</span>
-						</div>
-					{:else}
-						<div class="no-scan text-muted small">Belum ada scan</div>
-					{/if}
+		<div class="col-6">
+			<div class="card">
+				<div class="card-body p-2">
+					<!-- Info port -->
+					<div class="slot-header text-center">
+						<h6 class="mb-0 slot-name">{slot?.name ?? `USB COM ${index + 1}`}</h6>
+						<span class="badge rounded-pill {slot ? statusClass(slot.status) : 'text-muted'}"></span>
+					</div>
+	
+					<!-- Karyawan terakhir scan dari slot ini -->
+					<div class="last-scan mt-2">
+						{#if last}
+							<img
+								class="scan-avatar"
+								src={last.avatar || DEFAULT_AVATAR}
+								alt={last.nama}
+							/>
+							<div class="scan-info">
+								<span class="scan-code">{last.id}</span>
+								<span class="scan-nama">{last.nama}</span>
+							</div>
+						{:else}
+							<div class="no-scan text-muted small">Belum ada scan</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -61,6 +61,8 @@
 <style>
 	.usb-slots {
 		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 8px;
 	}
 

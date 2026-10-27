@@ -212,7 +212,16 @@
       </button>
     </div>
 
-    <UsbSlots {lastScans} />
+    <div class="row">
+      <div class="col-4">
+        <div class="overflow-hidden border border-primary border-2 rounded-3">
+          <img src="https://karyawan.berlcosmetics.com/barcodeabsensi/09882742eccdc342b0089b4247abe4fa.png" class="w-100 img-fluid" alt="Qr Code">
+        </div>
+      </div>
+      <div class="col">
+        <UsbSlots {lastScans} />
+      </div>
+    </div>
 
     <p class="scan-hint mb-0">
       Anda juga bisa menggunakan <span class="text-danger">QR Code Scanner</span>
