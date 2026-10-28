@@ -7,12 +7,12 @@
   import UsbSlots from "$lib/components/UsbSlots.svelte";
   import SettingModal from "$lib/components/SettingModal.svelte";
   import { processScan } from "$lib/absensi.js";
-  import { VIDEO_URL } from "$lib/config.js";
+  import { QR_IMAGE_BASE, VIDEO_URL } from "$lib/config.js";
   import { allAbsensiToday, findKaryawan } from "$lib/db.js";
   import { loading } from "$lib/loading.svelte.js";
   import { scanner } from "$lib/scanner.svelte.js";
   import { createNfcScanner } from "$lib/nfcscanner.js";
-  import { fetchKaryawan, syncAbsensi } from "$lib/sync.js";
+  import { fetchKaryawan, syncAbsensi, fetchQrCode } from "$lib/sync.js";
   import { addToast } from "$lib/toast.svelte.js";
   import "./page.css";
 
@@ -22,6 +22,7 @@
   let feedback = $state(null);
   let feedbackTimer;
   let manualCode = $state("");
+  let imagePath = $state("");
 
   // last-scan per USB slot index
   let lastScans = $state([]);
@@ -34,13 +35,14 @@
   let logoClickCount = $state(0);
   let logoClickTimer;
   const TRIPLE_CLICK_MS = 800;
+  const UPDATE_MS = 2 * 60 * 1000;
 
   function showErrorToast(title, body) {
     addToast({
       title,
       body: String(body ?? "Terjadi kesalahan."),
       type: "error",
-      duration: 5000
+      duration: 5000,
     });
   }
 
@@ -62,9 +64,20 @@
       message: result.message,
       nama: result.user?.nama,
       avatar: result.user?.avatar,
-      at: new Date().toLocaleString("id-ID")
+      at: new Date().toLocaleString("id-ID"),
     };
     feedbackTimer = setTimeout(() => (feedback = null), 2000);
+  }
+
+  async function getLatestQrImage() {
+    try {
+      const data = await fetchQrCode();
+      if (!data?.code) throw new Error("Respons QR tidak berisi kode.");
+      imagePath = `${QR_IMAGE_BASE}/${data.code}.png`;
+    } catch (error) {
+      console.warn("qr code gagal:", error);
+      showErrorToast("Gagal memuat QR code", error.message);
+    }
   }
 
   async function reloadRows() {
@@ -94,7 +107,7 @@
         updated[slotIndex] = {
           id: karyawan.id,
           nama: karyawan.nama,
-          avatar: karyawan.avatar ?? null
+          avatar: karyawan.avatar ?? null,
         };
         lastScans = updated;
       }
@@ -120,18 +133,19 @@
       if (navigator.onLine) {
         const [karyawan, sync] = await Promise.allSettled([
           fetchKaryawan(),
-          syncAbsensi()
+          syncAbsensi(),
+          getLatestQrImage(),
         ]);
         if (karyawan.status === "rejected") {
           showErrorToast(
             "Gagal muat karyawan",
-            karyawan.reason?.message ?? karyawan.reason
+            karyawan.reason?.message ?? karyawan.reason,
           );
         }
         if (sync.status === "rejected") {
           showErrorToast(
             "Gagal sync absensi",
-            sync.reason?.message ?? sync.reason
+            sync.reason?.message ?? sync.reason,
           );
         }
       }
@@ -144,9 +158,10 @@
   onMount(() => {
     const stopScanner = scanner.start({
       onScan: handleScan,
-      onError: (message) => showErrorToast("Scanner", message)
+      onError: (message) => showErrorToast("Scanner", message),
     });
     refreshAll();
+    getLatestQrImage();
 
     const onOnline = () => refreshAll();
     const onOffline = () => reloadRows();
@@ -154,7 +169,7 @@
       onScan: handleScan,
       minLength: 8,
       threshold: 30,
-      cooldown: 1000
+      cooldown: 1000,
     });
     nfcScannerInstance.start();
     window.addEventListener("online", onOnline);
@@ -168,20 +183,31 @@
       sw.ready.then((reg) => reg.active?.postMessage(msg)).catch(() => {});
     }
     requestVideoCache();
-    navigator.serviceWorker?.addEventListener("controllerchange", requestVideoCache);
+    navigator.serviceWorker?.addEventListener(
+      "controllerchange",
+      requestVideoCache,
+    );
 
     const focusTimer = setInterval(() => {
       if (!settingOpen) document.activeElement?.focus();
     }, 1000);
 
+    const updateTimer = setInterval(() => {
+      refreshAll();
+    }, UPDATE_MS);
+
     return () => {
       stopScanner();
       clearInterval(focusTimer);
+      clearInterval(updateTimer);
       clearTimeout(feedbackTimer);
       clearTimeout(logoClickTimer);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
-      navigator.serviceWorker?.removeEventListener("controllerchange", requestVideoCache);
+      navigator.serviceWorker?.removeEventListener(
+        "controllerchange",
+        requestVideoCache,
+      );
     };
   });
 
@@ -214,8 +240,13 @@
 
     <div class="row">
       <div class="col-4">
-        <div class="overflow-hidden border border-primary border-2 rounded-3">
-          <img src="https://karyawan.berlcosmetics.com/barcodeabsensi/09882742eccdc342b0089b4247abe4fa.png" class="w-100 img-fluid" alt="Qr Code">
+        <div
+          class="overflow-hidden border border-primary border-2 rounded-3"
+          style="max-width: 200px;"
+        >
+          {#if imagePath}
+            <img src={imagePath} class="w-100 img-fluid" alt="Qr Code" />
+          {/if}
         </div>
       </div>
       <div class="col">
@@ -224,7 +255,8 @@
     </div>
 
     <p class="scan-hint mb-0">
-      Anda juga bisa menggunakan <span class="text-danger">QR Code Scanner</span>
+      Anda juga bisa menggunakan <span class="text-danger">QR Code Scanner</span
+      >
       atau kartu <span class="text-danger">RFID</span> Anda untuk absen.
     </p>
 

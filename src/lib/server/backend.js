@@ -10,7 +10,8 @@ export function backendOrigin() {
 
 export const BACKEND = {
 	karyawan: '/api/v1/pegawai/data',
-	sync: '/api/v1/kiosk-absensi/sync'
+	sync: '/api/v1/kiosk-absensi/sync',
+	qrCode: '/api/v1/kiosk-absensi/qr-code',
 };
 
 /**

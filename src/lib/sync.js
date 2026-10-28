@@ -42,6 +42,13 @@ export async function fetchKaryawan() {
   );
 }
 
+export async function fetchQrCode() {
+  const response = await fetch(API.qrPath);
+  if (!response.ok)
+    throw new Error(`Gagal memuat QR code (${response.status})`);
+  return await response.json();
+}
+
 /**
  * Kirim absensi yang belum ter-sync. Server membalas seluruh absensi hari ini,
  * dan balasan itu yang jadi sumber kebenaran untuk cache lokal.
